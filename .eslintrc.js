@@ -12,5 +12,7 @@ module.exports = {
 		ecmaVersion: 'latest', sourceType: 'module',
 	},
 	plugins: ['vue'],
-	rules: {},
+	rules: {
+		'no-bitwise': 'off',
+	},
 };
