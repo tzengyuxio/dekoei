@@ -107,22 +107,31 @@ function decodeText() {
 </script>
 
 <template>
-  <h2>Char Encoding</h2>
   <label> <input type="radio" name="encoding" value="koeitw" checked/> KOEI-TW </label>
   <label> <input type="radio" name="encoding" value="shiftjis"/> Shift JIS </label>
   <div>
     <label for="input1">輸入文字:</label>
     <input type="text" id="input1" class="text-black" v-model="inputText" @keyup.enter="encodeText"/>
-    <button @click="encodeText">轉換</button>
+    <button type="button" @click="encodeText"
+            class="mx-2 text-blue-700 font-normal py-1 px-2 rounded transition duration-300 ease-in-out focus:outline-none focus:shadow-outline border border-blue-700 hover:bg-blue-700 hover:text-white">
+      轉換
+    </button>
     <div>轉換結果: {{ encodedText }}</div>
   </div>
   <div>
     <label for="input2">輸入 hex string:</label>
     <input type="text" id="input2" class="text-black" v-model="inputHex" @keyup.enter="decodeText"/>
-    <button @click="decodeText">轉換</button>
+    <button type="button" @click="decodeText"
+            class="mx-2 text-blue-700 font-normal py-1 px-2 rounded transition duration-300 ease-in-out focus:outline-none focus:shadow-outline border border-blue-700 hover:bg-blue-700 hover:text-white">
+      轉換
+    </button>
     <div>轉換結果: {{ decodedText }}</div>
   </div>
 </template>
 
 <style scoped>
+input {
+  border: 1px solid #222222;
+  margin: 2px;
+}
 </style>
