@@ -24,7 +24,7 @@ const router = createRouter({
 		},
 		{
 			path: '/image',
-			name: 'image unpack',
+			name: 'image unpack.js',
 			component: ImageUnpack,
 		},
 		{

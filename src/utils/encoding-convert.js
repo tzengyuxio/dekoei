@@ -22,7 +22,7 @@ import {
 	unicodeToCNS11643OrderTable,
 	cns11643ToUnicodeTable,
 	orderToUnicodeTable,
-} from './encoding-table.js';
+} from '@/data/encoding-table';
 
 /**
  * Converts an order number to a KOEI Tw-encoded Uint8Array.
