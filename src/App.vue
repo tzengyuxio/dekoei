@@ -1,8 +1,8 @@
 <script setup>
+import {ref} from 'vue';
 import {RouterLink, RouterView} from 'vue-router';
 import {Disclosure, DisclosureButton, DisclosurePanel} from '@headlessui/vue';
 import {Bars3Icon, XMarkIcon} from '@heroicons/vue/24/outline';
-import {ref} from 'vue';
 
 const navigation = [
 	{name: 'Dashboard', href: '/', current: true},

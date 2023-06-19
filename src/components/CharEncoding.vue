@@ -1,26 +1,44 @@
 <script setup>
+import {computed, ref} from 'vue';
 import Encoding from 'encoding-japanese';
-import {ref} from 'vue';
 import {koeiTwToOrder, orderOfUnicode, orderToKOEITw, orderToUnicode} from '@/utils/encoding-convert';
-import ZButton from '@/components/ZButton.vue';
 
+const encodings = ref([
+	{label: 'KOEI TW', value: 'koei_tw'},
+	{label: 'Big5', value: 'big5'},
+	{label: 'Shift JIS', value: 'shift_jis'},
+]);
+const selectedEncoding = ref('koei_tw');
 const inputText = ref('');
 const inputHex = ref('');
-const encodedText = ref('');
-const decodedText = ref('');
 
-function encoding() {
-	const encodingRadios = document.getElementsByName('encoding');
-	let selectedEncoding = 'koeitw';
-	for (let i = 0; i < encodingRadios.length; i++) {
-		if (encodingRadios[i].checked) {
-			selectedEncoding = encodingRadios[i].value;
-			break;
-		}
+const encodedText = computed(() => {
+	if (inputText.value === '') {
+		return '';
 	}
 
-	return selectedEncoding;
-}
+	if (selectedEncoding.value === 'koei_tw') {
+		return textToKOEITwCode(inputText.value);
+	}
+
+	if (selectedEncoding.value === 'shift_jis') {
+		return textToShiftJISCode(inputText.value);
+	}
+
+	return '(尚不支援 ' + selectedEncoding.value + ' 轉換內碼)';
+});
+
+const decodedText = computed(() => {
+	if (inputHex.value === '') {
+		return '';
+	}
+
+	if (selectedEncoding.value === 'koei_tw') {
+		return koeiTwCodeToText(inputHex.value);
+	}
+
+	return codeToText(inputHex.value, selectedEncoding.value);
+});
 
 function addSpaceToText(text) {
 	// 使用正則表達式來將每四個字符匹配到一個獨立的分組中
@@ -32,14 +50,14 @@ function addSpaceToText(text) {
 }
 
 function codeToText(code, codec) {
-	const shiftJISDecoder = new TextDecoder(codec);
+	const decoder = new TextDecoder(codec);
 	const inputHexArray = code.replaceAll(' ', '').match(/.{1,2}/g);
 	const inputUint8Array = new Uint8Array(inputHexArray.length);
 	for (let i = 0; i < inputHexArray.length; i++) {
 		inputUint8Array[i] = parseInt(inputHexArray[i], 16);
 	}
 
-	return shiftJISDecoder.decode(inputUint8Array.buffer);
+	return decoder.decode(inputUint8Array.buffer);
 }
 
 function koeiTwCodeToText(code) {
@@ -89,44 +107,31 @@ function textToShiftJISCode(text) {
 	return addSpaceToText(encodedTextHexArray.join(''));
 }
 
-function encodeText() {
-	if (encoding() === 'shiftjis') {
-		encodedText.value = textToShiftJISCode(inputText.value);
-	} else {
-		encodedText.value = textToKOEITwCode(inputText.value);
-	}
-}
-
-function decodeText() {
-	if (encoding() === 'shiftjis') {
-		decodedText.value = codeToText(inputHex.value, 'shift_jis');
-	} else {
-		decodedText.value = koeiTwCodeToText(inputHex.value);
-	}
-}
-
 </script>
 
 <template>
-  <label> <input type="radio" name="encoding" value="koeitw" checked/> KOEI-TW </label>
-  <label> <input type="radio" name="encoding" value="shiftjis"/> Shift JIS </label>
+  <template v-for="encoding in encodings" :key="encoding.value">
+    <div>
+      <input type="radio" :id="'encoding-'+encoding.value" name="encoding" :value="encoding.value"
+             v-model="selectedEncoding"/>
+      <label :for="'encoding-'+encoding.value"> {{ encoding.label }} </label>
+    </div>
+  </template>
   <div>
     <label for="input1">輸入文字:</label>
-    <input type="text" id="input1" class="text-black" v-model="inputText" @keyup.enter="encodeText" placeholder="(請輸入文字)"/>
-    <z-button type="button" @click="encodeText"> 轉換 </z-button>
+    <input type="text" id="input1" class="text-black" v-model="inputText"
+           placeholder="(請輸入文字)"/>
     <div>轉換結果: {{ encodedText }}</div>
   </div>
   <div>
     <label for="input2">輸入 hex string:</label>
-    <input type="text" id="input2" class="text-black" v-model="inputHex" @keyup.enter="decodeText"/>
-    <z-button type="button" @click="decodeText"> 轉換 </z-button>
+    <input type="text" id="input2" class="text-black" v-model="inputHex"/>
     <div>轉換結果: {{ decodedText }}</div>
   </div>
 </template>
 
 <style scoped>
-input {
-  border: 1px solid #222222;
-  margin: 2px;
+input[type="text"] {
+  @apply border border-b-gray-900 ml-2;
 }
 </style>
