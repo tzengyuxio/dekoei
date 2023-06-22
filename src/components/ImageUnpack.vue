@@ -3,6 +3,8 @@ import { colorIndexesToImage, hexToRGB, unpackGrp, unpackKao, unpackNpk } from "
 import { ref, computed, onMounted } from "vue";
 import palettes from "@/data/palettes.js";
 import ZButton from "@/components/ZButton.vue";
+import ZColorPicker from "@/components/ZColorPicker.vue";
+import ZColorPalette from "@/components/ZColorPalette.vue";
 
 const fileBytes = ref(null);
 const selectedFile = ref("");
@@ -104,19 +106,7 @@ function guessType(data) {
         <z-button type="reset" @click="reset">清除</z-button>
       </div>
       <!-- Color Pickers -->
-      <div class="mt-4 border">
-        <select class="mb-2" v-model="selectedOption">
-          <option v-for="option in options" :key="option.value" :value="option.value">
-            {{ option.label }}
-          </option>
-        </select>
-        <div class="flex">
-          <span v-for="(color, index) in colors" :key="index">
-            <input type="color" :value="color" class="w-16 h-9" disabled />
-            <span class="text-sm">{{ color }}</span>
-          </span>
-        </div>
-      </div>
+      <z-color-palette />
       <!-- Offset Infos -->
       <div class="mt-4 border"></div>
     </div>
