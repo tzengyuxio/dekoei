@@ -1,34 +1,30 @@
 <script setup>
-import { colorIndexesToImage, hexToRGB, unpackGrp, unpackKao, unpackNpk } from "@/utils/unpack";
-import { ref, computed, onMounted } from "vue";
-import palettes from "@/data/palettes.js";
+import { unpackGrp, unpackKao, unpackNpk } from "@/utils/unpack";
+import { ref } from "vue";
 import ZButton from "@/components/ZButton.vue";
 import ZColorPalette from "@/components/ZColorPalette.vue";
-import { useColorPresetStore } from "@/stores/color-preset";
+import { useOffsetInfosStore } from "@/stores/offset-infos";
+import ImageGallery from "@/components/ImageGallery.vue";
 
-const fileBytes = ref(null);
-const selectedFile = ref("");
-const selectedOption = useColorPresetStore();
-
-const colors = computed(() => palettes[selectedOption.preset].codes);
-const gallery = ref(null);
-
-onMounted(() => {
-  drawImages();
-});
+const selectedFile = ref(new Blob());
+const offsetInfoStore = useOffsetInfosStore();
 
 function onFileChange(event) {
   reset();
   selectedFile.value = event.target.files[0];
   if (selectedFile.value) {
     const reader = new FileReader();
+
     reader.onload = () => {
-      fileBytes.value = new Uint8Array(reader.result);
-      drawImages();
+      if (reader.result instanceof ArrayBuffer) {
+        offsetInfoStore.setFileBytes(new Uint8Array(reader.result));
+        guessOffsetInfos();
+        // drawImages();
+      }
     };
 
     reader.onerror = (error) => {
-      console.error("Load file error:", error);
+      console.error("Error on file change", error);
     };
 
     reader.readAsArrayBuffer(selectedFile.value);
@@ -38,44 +34,39 @@ function onFileChange(event) {
 }
 
 function reset() {
-  gallery.value.innerHTML = "";
+  // gallery.value.innerHTML = "";
+  console.log("resetting...");
 }
 
-function drawImages() {
-  const unpackers = { kao: unpackKao, npk: unpackNpk, grp: unpackGrp };
-  if (fileBytes.value) {
-    let cursor = 0;
-    const rgbColors = colors.value.map(hexToRGB);
-    let unpacker = null;
-    while (cursor < fileBytes.value.length) {
-      const data = fileBytes.value.slice(cursor);
-      if (unpacker === null) {
-        const type = guessType(data);
-        console.log("guess type: ", type);
-        unpacker = unpackers[type];
-      }
-
-      const [colorIndexes, used, w, h] = unpacker(data, 64, 80);
-      if (colorIndexes === null) {
-        break;
-      }
-
-      console.log("drawImages:", fileBytes.value.length, cursor, used, w, h);
-      cursor += used;
-      const imageData = colorIndexesToImage(colorIndexes, w, h, rgbColors);
-
-      const canvas = document.createElement("canvas");
-      canvas.classList = "m-0.5"; // Border: 2px solid gray
-      canvas.width = w;
-      canvas.height = h;
-      canvas.style.width = w + "px";
-      canvas.style.height = h + "px";
-      canvas.getContext("2d").putImageData(imageData, 0, 0);
-      gallery.value.appendChild(canvas);
-    }
-  } else {
-    console.error("The selected file isn't a file.");
+function guessOffsetInfos() {
+  let cursor = 0;
+  const type = guessType(offsetInfoStore.fileBytes);
+  const unpacker = { kao: unpackKao, npk: unpackNpk, grp: unpackGrp }[type];
+  if (unpacker === null) {
+    console.log("guess type failed");
+    return;
   }
+  console.log("guess type: ", type);
+  while (cursor < offsetInfoStore.fileBytes.length) {
+    const data = offsetInfoStore.fileBytes.slice(cursor);
+    const [colorIndexes, used, ,] = unpacker(data, 64, 80);
+    console.log("cursor, used:", cursor, used);
+    if (colorIndexes === null) {
+      console.log("break via null color index");
+      break;
+    }
+    offsetInfoStore.append({
+      type: type,
+      offset: cursor,
+      size: used,
+      count: 1,
+      memo: {},
+    });
+    cursor += used;
+  }
+  offsetInfoStore.fill(offsetInfoStore.fileBytes.length);
+
+  console.log("guessOffsetInfos:", offsetInfoStore.offsetInfos);
 }
 
 function guessType(data) {
@@ -108,7 +99,7 @@ function guessType(data) {
       <!-- Offset Infos -->
       <div class="mt-4 border"></div>
     </div>
-    <div class="flex flex-grow flex-wrap border" ref="gallery"></div>
+    <image-gallery />
   </div>
 </template>
 

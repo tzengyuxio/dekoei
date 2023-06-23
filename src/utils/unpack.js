@@ -112,6 +112,10 @@ export function unpackNpk(data) {
   while (pos < data.length && indexes.length < expectedSize) {
     const flagBit = data[pos++];
     for (let i = 0; i < 8; ++i) {
+      if (indexes.length >= expectedSize) {
+        console.log("unpackGrp: info 3", w, h, expectedSize, indexes.length);
+        break;
+      }
       const flag = (flagBit & (0x1 << i)) >> i;
       if (flag) {
         const b = data[pos++];
@@ -119,6 +123,10 @@ export function unpackNpk(data) {
         const runOffset = b & 0x80 ? (((b & 0x60) >> 5) + 1) * w : (((b & 0x60) >> 5) + 1) * 4;
         for (let i = 0; i < runSize * 4; ++i) {
           indexes.push(indexes[indexes.length - runOffset]);
+          if (indexes.length >= expectedSize) {
+            console.log("unpackGrp: info 1", w, h, expectedSize, indexes.length);
+            break;
+          }
         }
       } else {
         let b1 = data[pos++];
@@ -132,6 +140,10 @@ export function unpackNpk(data) {
         }
 
         indexes.push(...buf);
+        if (indexes.length >= expectedSize) {
+          console.log("unpackGrp: info 2", w, h, expectedSize, indexes.length);
+          break;
+        }
       }
     }
   }
