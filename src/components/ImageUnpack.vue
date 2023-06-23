@@ -3,19 +3,17 @@ import { colorIndexesToImage, hexToRGB, unpackGrp, unpackKao, unpackNpk } from "
 import { ref, computed, onMounted } from "vue";
 import palettes from "@/data/palettes.js";
 import ZButton from "@/components/ZButton.vue";
-import ZColorPicker from "@/components/ZColorPicker.vue";
 import ZColorPalette from "@/components/ZColorPalette.vue";
+import { useColorPresetStore } from "@/stores/color-preset";
 
 const fileBytes = ref(null);
 const selectedFile = ref("");
-const selectedOption = ref("default");
-const options = Object.entries(palettes).map(([key, value]) => ({ label: value.name, value: key }));
+const selectedOption = useColorPresetStore();
 
-const colors = computed(() => palettes[selectedOption.value].codes);
+const colors = computed(() => palettes[selectedOption.preset].codes);
 const gallery = ref(null);
 
 onMounted(() => {
-  // Console.log(gallery.value);
   drawImages();
 });
 
@@ -100,7 +98,7 @@ function guessType(data) {
   <div class="container flex">
     <div class="flex flex-col w-1/2">
       <!-- File Controls -->
-      <div class="small-block w-64 h-16 border border-gray-400">
+      <div class="small-block w-64 h-24 border border-gray-400">
         <div>載入檔案</div>
         <input type="file" @change="onFileChange" />
         <z-button type="reset" @click="reset">清除</z-button>
