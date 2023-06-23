@@ -12,7 +12,9 @@ export const useOffsetInfosStore = defineStore("offset-infos", () => {
   const fileBytes = ref(new Uint8Array(0));
   const offsetInfos = ref([]);
 
-  const totalSize = computed(() => offsetInfos.value.reduce((sum, offsetInfo) => sum + offsetInfo.size, 0));
+  const totalSize = computed(() =>
+    offsetInfos.value.reduce((sum, offsetInfo) => sum + offsetInfo.size * offsetInfo.count, 0)
+  );
 
   function setFileBytes(fileBytes) {
     this.fileBytes = fileBytes;
