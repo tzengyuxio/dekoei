@@ -48,15 +48,15 @@ function guessOffsetInfos() {
   const unpacker = unpackFormats[format].method;
   const infos = [];
   if (unpacker === null) {
-    console.log("guess type failed");
+    console.log("guess type failed: ", format);
     return;
   }
   while (cursor < offsetInfoStore.fileBytes.length) {
     const data = offsetInfoStore.fileBytes.slice(cursor);
-    const [colorIndexes, used, ,] = unpacker(data, 64, 80);
-    console.log("guess offset info: ", format, cursor, used);
-    if (colorIndexes === null) {
-      console.log("break via null color index");
+    const [, used, , , error] = unpacker(data, 64, 80, halfHeight.value);
+    // console.debug("guess offset info: ", format, cursor, used, halfHeight.value);
+    if (error !== "") {
+      console.error("break via null color index: ", error);
       break;
     }
     infos.push({
@@ -114,10 +114,10 @@ function guessFormat(data) {
       <!-- Color Pickers -->
       <z-color-palette />
       <!-- Offset Infos -->
-      <div class="form-control w-1/2">
+      <div class="form-control w-fit">
         <label class="label cursor-pointer">
-          <span class="label-text">半高 (HalfHeight)</span>
-          <input type="checkbox" class="toggle" v-model="halfHeight" />
+          <span :class="'label-text' + (halfHeight ? '' : ' text-gray-400')">半高 (HalfHeight)</span>
+          <input type="checkbox" class="toggle mx-1" v-model="halfHeight" />
         </label>
       </div>
       <z-offset-info-list />

@@ -37,6 +37,11 @@ export const useOffsetInfosStore = defineStore("offset-infos", () => {
     offsetInfos.value.splice(index, 0, offsetInfo);
   }
 
+  function update(index, offsetInfo) {
+    console.log(offsetInfo);
+    offsetInfos.value[index] = offsetInfo;
+  }
+
   function remove(index) {
     offsetInfos.value.splice(index, 1);
   }
@@ -52,5 +57,17 @@ export const useOffsetInfosStore = defineStore("offset-infos", () => {
     }
   }
 
-  return { halfHeight, setHalfHeight, fileBytes, setFileBytes, offsetInfos, clear, append, insert, remove, fill };
+  return {
+    halfHeight,
+    setHalfHeight,
+    fileBytes,
+    setFileBytes,
+    offsetInfos,
+    clear,
+    append,
+    insert,
+    update,
+    remove,
+    fill,
+  };
 });

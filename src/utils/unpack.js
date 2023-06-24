@@ -5,7 +5,9 @@ export const unpackFormats = {
   npk: { method: unpackNpk },
 };
 
-export function doNothing() {}
+export function doNothing() {
+  return [[], -1, -1, -1, ""];
+}
 
 function grouper(arr, size, fillValue = null) {
   const groups = [];
@@ -35,15 +37,23 @@ export function hexToRGB(hex) {
  * @param {ArrayBuffer} data - the Kao encoded data to be unpacked
  * @param {number} w - the width of the image in pixels
  * @param {number} h - the height of the image in pixels
- * @return {[number], number} an array of color indexes and the size of the unpacked data used
+ * @param {boolean} halfHeight
+ * @return {[number], number, number, number, string} an array of color indexes and the size of the unpacked data used
  */
-export function unpackKao(data, w, h) {
-  const dataSize = ((w * h) / 8) * 3;
+export function unpackKao(data, w, h, halfHeight) {
+  let error = "";
+  const dataSize = halfHeight ? ((w * h) / 2 / 8) * 3 : ((w * h) / 8) * 3;
   if (data.byteLength < dataSize) {
-    return [null, 0, w, h];
-  }
-
-  if (data.byteLength >= dataSize) {
+    // return [null, 0, w, h];
+    console.warn("unpackKao: not enough data.", {
+      actual: data.byteLength,
+      expected: dataSize,
+      width: w,
+      height: h,
+      halfHeight: halfHeight,
+    });
+    error = "not enough data";
+  } else if (data.byteLength > dataSize) {
     data = data.slice(0, dataSize);
   }
 
@@ -58,19 +68,21 @@ export function unpackKao(data, w, h) {
     }
   });
 
-  return [indexes, dataSize, w, h];
+  return [indexes, dataSize, w, h, error];
 }
 
-export function unpackGrp(data) {
+export function unpackGrp(data, _w, _h, halfHeight) {
+  let error = "";
   const w = (data[1] << 8) | data[0];
   const h = (data[3] << 8) | data[2];
   if (w <= 0 || w > 800 || h <= 0 || h > 800) {
-    console.log("unpackGrp: out of range", w, h);
-    return [null, 0, w, h];
+    error = "unpackGrp: out of range: " + w + "x" + h;
+    console.log(error);
+    return [null, 0, w, h, error];
   }
 
   let pos = 4;
-  const expectedSize = w * h;
+  const expectedSize = halfHeight ? (w * h) / 2 : w * h;
   const indexes = [];
   while (pos < data.length && indexes.length < expectedSize) {
     const b = data[pos++];
@@ -99,10 +111,11 @@ export function unpackGrp(data) {
   }
 
   //   Console.log('unpackGrp: info', w, h, expectedSize, indexes.length)
-  return [indexes, pos, w, h];
+  return [indexes, pos, w, h, error];
 }
 
-export function unpackNpk(data) {
+export function unpackNpk(data, _w, _h, halfHeight) {
+  let error = "";
   // First 6 bytes are 'NPK016'
   // next 2 bytes: unknown yet
   const sw = (data[9] << 8) | data[8]; // Screen width
@@ -110,13 +123,14 @@ export function unpackNpk(data) {
   const w = (data[13] << 8) | data[12];
   const h = (data[15] << 8) | data[14];
   if (sw <= 0 || sw > 800 || sh <= 0 || sh > 800 || w > sw || h > sh) {
-    console.log("unpackGrp: out of range(sw, sh, w, h)", sw, sh, w, h);
-    return [null, 0, w, h];
+    error = "unpackNpk: out of range(sw, sh, w, h): " + sw + ", " + sh + ", " + w + ", " + h;
+    console.log(error);
+    return [null, 0, w, h, error];
   }
 
   // Next 32 bytes: palette (not work)
   let pos = 0x30;
-  const expectedSize = w * h;
+  const expectedSize = halfHeight ? (w * h) / 2 : w * h;
   const indexes = [];
   while (pos < data.length && indexes.length < expectedSize) {
     const flagBit = data[pos++];
@@ -148,7 +162,7 @@ export function unpackNpk(data) {
     }
   }
 
-  return [indexes, pos, w, h];
+  return [indexes, pos, w, h, error];
 }
 
 /**

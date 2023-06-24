@@ -1,29 +1,46 @@
 <script setup>
 import { ref } from "vue";
 import { unpackFormats } from "@/utils/unpack";
+import { useOffsetInfosStore } from "@/stores/offset-infos";
 
 const props = defineProps({
   index: { type: Number, default: 0 },
-  format: { type: String, default: "skip" },
-  offset: { type: Number, default: 0 },
-  size: { type: Number, default: 0 },
-  count: { type: Number, default: 0 },
+  format: { type: String, default: "skip", required: true },
+  offset: { type: Number, default: 0, required: true },
+  size: { type: Number, default: 0, required: true },
+  count: { type: Number, default: -1 },
+  width: { type: Number, default: -1 },
+  height: { type: Number, default: -1 },
 });
 
-const disabled = true;
+const vOffset = ref(props.offset);
+const vSize = ref(props.size);
+const vCount = ref(props.count);
+const vWidth = ref(props.width);
+const vHeight = ref(props.height);
+
 const editMode = ref(false);
 const selected = ref(props.format);
 const formats = Object.keys(unpackFormats);
-
-function updateSelect() {}
+const offsetInfosStore = useOffsetInfosStore();
 
 function enableEdit() {
   editMode.value = true;
 }
 
-function deleteInfo() {}
+function deleteInfo() {
+  offsetInfosStore.remove(props.index);
+}
 
 function save() {
+  offsetInfosStore.update(props.index, {
+    format: selected.value,
+    offset: vOffset.value,
+    size: vSize.value,
+    count: vCount.value,
+    width: vWidth.value,
+    height: vHeight.value,
+  });
   editMode.value = false;
 }
 
@@ -78,15 +95,8 @@ function cancel() {
       <label class="label pb-0">
         <span class="label-text">type</span>
       </label>
-      <select
-        v-model="selected"
-        :disabled="!editMode"
-        class="select select-primary select-xs w-full max-w-sx"
-        @change="updateSelect"
-      >
-        <option v-for="x in formats" :key="x" :value="x" :selected="x === format">
-          {{ x }}
-        </option>
+      <select v-model="selected" :disabled="!editMode" class="select select-primary select-xs w-full max-w-sx">
+        <option v-for="x in formats" :key="x" :value="x" :selected="x === format">{{ x }}</option>
       </select>
     </div>
     <div class="form-control w-1/6">
@@ -94,9 +104,9 @@ function cancel() {
         <span class="label-text">offset</span>
       </label>
       <input
+        v-model.number="vOffset"
         type="text"
         :disabled="!editMode"
-        :placeholder="offset"
         class="input input-bordered w-full max-w-xs input-xs"
       />
     </div>
@@ -105,9 +115,9 @@ function cancel() {
         <span class="label-text">size</span>
       </label>
       <input
+        v-model.number="vSize"
         type="text"
         :disabled="!editMode"
-        :placeholder="size"
         class="input input-bordered w-full max-w-xs input-xs"
       />
     </div>
@@ -116,9 +126,9 @@ function cancel() {
         <span class="label-text">count</span>
       </label>
       <input
+        v-model.number="vCount"
         type="text"
         :disabled="!editMode"
-        :placeholder="count"
         class="input input-bordered w-full max-w-xs input-xs"
       />
     </div>
@@ -127,9 +137,9 @@ function cancel() {
         <span class="label-text">w</span>
       </label>
       <input
+        v-model.number="vWidth"
         type="text"
         :disabled="!editMode"
-        :placeholder="count"
         class="input input-bordered w-full max-w-xs input-xs"
       />
     </div>
@@ -138,14 +148,20 @@ function cancel() {
         <span class="label-text">h</span>
       </label>
       <input
+        v-model.number="vHeight"
         type="text"
         :disabled="!editMode"
-        :placeholder="count"
         class="input input-bordered w-full max-w-xs input-xs"
       />
     </div>
     <!-- Infos -->
-    <span>from pos:{{ offset }} | ⬅ {{ size * count }} bytes ➡ | to pos:{{ offset + size * count }}</span>
+    <span class="flex w-full mt-1">
+      <span class="w-3/12 text-left">pos:{{ offset }} </span>
+      <span class="w-1/12 text-center">| ⬅</span>
+      <span class="w-4/12 text-center">{{ size * count }} bytes</span>
+      <span class="w-1/12 text-center">➡ |</span>
+      <span class="w-3/12 text-right">pos:{{ offset + size * count }}</span>
+    </span>
   </div>
 </template>
 

@@ -30,28 +30,33 @@ function createCanvas(imageData, w, h) {
 
 function updateGallery() {
   gallery.value.innerHTML = "";
-  const offsetInfos = offsetInfosStore.offsetInfos;
   const rgbColors = colors.value.map(hexToRGB);
-  console.log("updateGallery halfHeight:", halfHeight);
 
-  offsetInfos.forEach((offsetInfo) => {
+  offsetInfosStore.offsetInfos.forEach((offsetInfo) => {
     const unpacker = unpackFormats[offsetInfo.format].method;
-    if (unpacker === null) {
-      console.log("guess format: ", offsetInfo.format);
+    if (typeof unpacker !== "function") {
+      console.log("guess format, unpacker: ", offsetInfo.format, unpacker);
       return;
     }
     for (let i = 0; i < offsetInfo.count; i++) {
       const startPos = offsetInfo.offset + i * offsetInfo.size;
       const endPos = startPos + offsetInfo.size;
       const data = offsetInfosStore.fileBytes.slice(startPos, endPos);
-      const [colorIndexes, , w, h] = unpacker(data, 64, 80);
+      // console.log("update gallery iterate offset info", i, startPos, endPos, unpacker);
+      const [colorIndexes, , w, h, error] = unpacker(data, 64, 80, halfHeight.value);
+      if (colorIndexes === null || colorIndexes.length === 0) {
+        if (error !== "") {
+          console.error("updateGallery format and error: ", offsetInfo.format, error);
+        }
+        continue;
+      }
       const imageData = colorIndexesToImage(colorIndexes, w, h, rgbColors, halfHeight.value);
       createCanvas(imageData, w, h);
     }
   });
 }
 
-watch([halfHeight, fileBytes, offsetInfos, selectedOption], updateGallery);
+watch([halfHeight, fileBytes, offsetInfos, selectedOption], updateGallery, { deep: true });
 </script>
 
 <template>
