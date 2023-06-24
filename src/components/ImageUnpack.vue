@@ -1,14 +1,17 @@
 <script setup>
 import { ref } from "vue";
+import { storeToRefs } from "pinia";
 import ZButton from "@/components/ZButton.vue";
 import ZColorPalette from "@/components/ZColorPalette.vue";
+import ZOffsetInfoList from "@/components/ZOffsetInfoList.vue";
 import ImageGallery from "@/components/ImageGallery.vue";
 import { useOffsetInfosStore } from "@/stores/offset-infos";
-import { unpackGrp, unpackKao, unpackNpk } from "@/utils/unpack";
-import ZOffsetInfoList from "@/components/ZOffsetInfoList.vue";
+import { unpackFormats } from "@/utils/unpack";
 
 const selectedFile = ref(new Blob());
 const offsetInfoStore = useOffsetInfosStore();
+
+const { halfHeight } = storeToRefs(offsetInfoStore);
 
 function onFileChange(event) {
   reset();
@@ -35,31 +38,29 @@ function onFileChange(event) {
 }
 
 function reset() {
-  // gallery.value.innerHTML = "";
   offsetInfoStore.clear();
   console.log("resetting...");
 }
 
 function guessOffsetInfos() {
   let cursor = 0;
-  const type = guessType(offsetInfoStore.fileBytes);
-  const unpacker = { kao: unpackKao, npk: unpackNpk, grp: unpackGrp }[type];
+  const format = guessFormat(offsetInfoStore.fileBytes);
+  const unpacker = unpackFormats[format].method;
   const infos = [];
   if (unpacker === null) {
     console.log("guess type failed");
     return;
   }
-  console.log("guess type: ", type);
   while (cursor < offsetInfoStore.fileBytes.length) {
     const data = offsetInfoStore.fileBytes.slice(cursor);
     const [colorIndexes, used, ,] = unpacker(data, 64, 80);
-    console.log("cursor, used:", cursor, used);
+    console.log("guess offset info: ", format, cursor, used);
     if (colorIndexes === null) {
       console.log("break via null color index");
       break;
     }
     infos.push({
-      type: type,
+      format: format,
       offset: cursor,
       size: used,
       count: 1,
@@ -69,9 +70,9 @@ function guessOffsetInfos() {
   }
   const newInfos = [];
   infos.forEach((info) => {
-    if (info.type === "kao" && newInfos.length > 0) {
+    if (info.format === "kao" && newInfos.length > 0) {
       const prevInfo = newInfos[newInfos.length - 1];
-      if (prevInfo.type === "kao" && info.size === prevInfo.size) {
+      if (prevInfo.format === "kao" && info.size === prevInfo.size) {
         newInfos[newInfos.length - 1].count += 1;
         return;
       }
@@ -85,7 +86,7 @@ function guessOffsetInfos() {
   offsetInfoStore.fill(offsetInfoStore.fileBytes.length);
 }
 
-function guessType(data) {
+function guessFormat(data) {
   const header = String.fromCharCode(...data.slice(0, 4));
   if (header.startsWith("NPK")) {
     return "npk";
@@ -113,6 +114,12 @@ function guessType(data) {
       <!-- Color Pickers -->
       <z-color-palette />
       <!-- Offset Infos -->
+      <div class="form-control w-1/2">
+        <label class="label cursor-pointer">
+          <span class="label-text">半高 (HalfHeight)</span>
+          <input type="checkbox" class="toggle" v-model="halfHeight" />
+        </label>
+      </div>
       <z-offset-info-list />
     </div>
     <image-gallery />

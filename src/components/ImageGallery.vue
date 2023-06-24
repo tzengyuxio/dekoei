@@ -4,14 +4,14 @@ import { storeToRefs } from "pinia";
 import palettes from "@/data/palettes";
 import { useOffsetInfosStore } from "@/stores/offset-infos";
 import { useColorPresetStore } from "@/stores/color-preset";
-import { colorIndexesToImage, hexToRGB, unpackGrp, unpackKao, unpackNpk } from "@/utils/unpack";
+import { colorIndexesToImage, hexToRGB, unpackFormats } from "@/utils/unpack";
 
 const gallery = ref(null);
 const offsetInfosStore = useOffsetInfosStore();
 const selectedOption = useColorPresetStore();
 const colors = computed(() => palettes[selectedOption.preset].codes);
 
-const { fileBytes, offsetInfos } = storeToRefs(offsetInfosStore);
+const { halfHeight, fileBytes, offsetInfos } = storeToRefs(offsetInfosStore);
 
 onMounted(() => {
   updateGallery();
@@ -30,14 +30,14 @@ function createCanvas(imageData, w, h) {
 
 function updateGallery() {
   gallery.value.innerHTML = "";
-  const unpackers = { kao: unpackKao, npk: unpackNpk, grp: unpackGrp };
   const offsetInfos = offsetInfosStore.offsetInfos;
   const rgbColors = colors.value.map(hexToRGB);
+  console.log("updateGallery halfHeight:", halfHeight);
 
   offsetInfos.forEach((offsetInfo) => {
-    const unpacker = unpackers[offsetInfo.type];
+    const unpacker = unpackFormats[offsetInfo.format].method;
     if (unpacker === null) {
-      console.log("guess type: ", offsetInfo.type);
+      console.log("guess format: ", offsetInfo.format);
       return;
     }
     for (let i = 0; i < offsetInfo.count; i++) {
@@ -45,13 +45,13 @@ function updateGallery() {
       const endPos = startPos + offsetInfo.size;
       const data = offsetInfosStore.fileBytes.slice(startPos, endPos);
       const [colorIndexes, , w, h] = unpacker(data, 64, 80);
-      const imageData = colorIndexesToImage(colorIndexes, w, h, rgbColors);
+      const imageData = colorIndexesToImage(colorIndexes, w, h, rgbColors, halfHeight.value);
       createCanvas(imageData, w, h);
     }
   });
 }
 
-watch([fileBytes, offsetInfos], updateGallery);
+watch([halfHeight, fileBytes, offsetInfos, selectedOption], updateGallery);
 </script>
 
 <template>

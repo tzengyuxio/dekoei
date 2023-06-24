@@ -18,7 +18,7 @@ const { offsetInfos } = storeToRefs(offsetInfosStore);
     <template v-for="(offsetInfo, index) in offsetInfos" :key="index">
       <z-offset-info-card
         :index="index"
-        :type="offsetInfo.type"
+        :format="offsetInfo.format"
         :offset="offsetInfo.offset"
         :size="offsetInfo.size"
         :count="offsetInfo.count"

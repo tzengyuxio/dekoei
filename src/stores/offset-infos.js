@@ -3,18 +3,23 @@ import { defineStore } from "pinia";
 
 export const useOffsetInfosStore = defineStore("offset-infos", () => {
   // OffsetInfo {
-  //   type: string;
+  //   format: string;
   //   offset: number;
   //   size: number;
   //   count: number;
   //   options: object;
   // }
+  const halfHeight = ref(false);
   const fileBytes = ref(new Uint8Array(0));
   const offsetInfos = ref([]);
 
   const totalSize = computed(() =>
     offsetInfos.value.reduce((sum, offsetInfo) => sum + offsetInfo.size * offsetInfo.count, 0)
   );
+
+  function setHalfHeight(halfHeight) {
+    this.halfHeight = halfHeight;
+  }
 
   function setFileBytes(fileBytes) {
     this.fileBytes = fileBytes;
@@ -39,7 +44,7 @@ export const useOffsetInfosStore = defineStore("offset-infos", () => {
   function fill(fullSize) {
     if (totalSize.value < fullSize) {
       append({
-        type: "fill",
+        format: "skip",
         offset: totalSize,
         size: fullSize - totalSize.value,
         count: 1,
@@ -47,5 +52,5 @@ export const useOffsetInfosStore = defineStore("offset-infos", () => {
     }
   }
 
-  return { fileBytes, setFileBytes, offsetInfos, clear, append, insert, remove, fill };
+  return { halfHeight, setHalfHeight, fileBytes, setFileBytes, offsetInfos, clear, append, insert, remove, fill };
 });

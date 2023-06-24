@@ -1,3 +1,12 @@
+export const unpackFormats = {
+  skip: { method: doNothing },
+  grp: { method: unpackGrp },
+  kao: { method: unpackKao, options: ["count", "width", "height"] },
+  npk: { method: unpackNpk },
+};
+
+export function doNothing() {}
+
 function grouper(arr, size, fillValue = null) {
   const groups = [];
   for (let i = 0; i < arr.length; i += size) {
@@ -142,20 +151,48 @@ export function unpackNpk(data) {
   return [indexes, pos, w, h];
 }
 
-export function colorIndexesToImage(indexes, w, h, colors) {
+/**
+ * Convert color indexes to ImageData
+ *
+ * @param {number[]} indexes - color indexes
+ * @param {number} w - width of image
+ * @param {number} h - height of image
+ * @param {Array} colors
+ * @param {boolean} halfHeight - actual data contains only half of whole image height
+ * @returns {ImageData}
+ */
+export function colorIndexesToImage(indexes, w, h, colors, halfHeight) {
   const image = new ImageData(w, h);
   if (colors.length < 16) {
     // Workaround
     colors.push(...colors);
   }
 
+  const putPixel = (idx, color) => {
+    image.data[idx] = color[0];
+    image.data[idx + 1] = color[1];
+    image.data[idx + 2] = color[2];
+    image.data[idx + 3] = 255;
+  };
+
   for (let i = 0; i < indexes.length; i++) {
     const color = colors[indexes[i]];
-    const offset = i * 4;
-    image.data[offset] = color[0];
-    image.data[offset + 1] = color[1];
-    image.data[offset + 2] = color[2];
-    image.data[offset + 3] = 255;
+    if (halfHeight) {
+      const x = i % w;
+      const y = Math.floor(i / w);
+      const idx = (2 * y * w + x) * 4;
+      if (idx >= image.data.length) {
+        break;
+      }
+      putPixel(idx, color);
+      putPixel(idx + w * 4, color);
+    } else {
+      const idx = i * 4;
+      if (idx >= image.data.length) {
+        break;
+      }
+      putPixel(idx, color);
+    }
   }
 
   return image;

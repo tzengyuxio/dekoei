@@ -80,7 +80,6 @@ function koeiTwCodeToText(code) {
 function textToKOEITwCode(text) {
   const orders = text.split("").map((c) => orderOfUnicode(c));
   const koeiTwValues = orders.map((order) => orderToKOEITw(order));
-  console.log(koeiTwValues);
   const koeiTwHexes = koeiTwValues.map((value) =>
     Array.from(value)
       .map((b) => b.toString(16).padStart(2, "0").toUpperCase())
@@ -115,6 +114,7 @@ function textToShiftJISCode(text) {
         name="encoding"
         :value="encoding.value"
         v-model="selectedEncoding"
+        class="radio radio-sm checked:bg-cyan-500 mr-2"
       />
       <label :for="'encoding-' + encoding.value"> {{ encoding.label }} </label>
     </div>
