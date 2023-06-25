@@ -14,7 +14,7 @@ const { offsetInfos } = storeToRefs(offsetInfosStore);
 </script>
 
 <template>
-  <div class="mt-4 border" ref="container">
+  <div class="mt-4 outline-block" ref="container">
     <template v-for="(offsetInfo, index) in offsetInfos" :key="index">
       <z-offset-info-card
         :index="index"

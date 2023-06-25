@@ -158,7 +158,7 @@ function cancel() {
     <span class="flex w-full mt-1">
       <span class="w-3/12 text-left">pos:{{ offset }} </span>
       <span class="w-1/12 text-center">| ⬅</span>
-      <span class="w-4/12 text-center">{{ size * count }} bytes</span>
+      <span class="w-4/12 text-center">{{ (size * count).toLocaleString() }} bytes</span>
       <span class="w-1/12 text-center">➡ |</span>
       <span class="w-3/12 text-right">pos:{{ offset + size * count }}</span>
     </span>

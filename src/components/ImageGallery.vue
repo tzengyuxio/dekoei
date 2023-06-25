@@ -60,7 +60,7 @@ watch([halfHeight, fileBytes, offsetInfos, selectedOption], updateGallery, { dee
 </script>
 
 <template>
-  <div class="flex flex-grow flex-wrap border place-content-start" ref="gallery"></div>
+  <div class="flex flex-grow flex-wrap place-content-start outline-block" ref="gallery"></div>
 </template>
 
 <style scoped></style>

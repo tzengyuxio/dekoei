@@ -7,6 +7,7 @@ import ZOffsetInfoList from "@/components/ZOffsetInfoList.vue";
 import ImageGallery from "@/components/ImageGallery.vue";
 import { useOffsetInfosStore } from "@/stores/offset-infos";
 import { unpackFormats } from "@/utils/unpack";
+import ZTabLabel from "@/components/ZTabLabel.vue";
 
 const selectedFile = ref(new Blob());
 const offsetInfoStore = useOffsetInfosStore();
@@ -106,15 +107,18 @@ function guessFormat(data) {
   <div class="container flex">
     <div class="flex flex-col w-1/2">
       <!-- File Controls -->
-      <div class="small-block w-128 h-24 border border-gray-400">
+      <div class="small-block w-128 outline-block">
+        <z-tab-label>Files</z-tab-label>
         <div>載入檔案</div>
         <input type="file" class="file-input file-input-bordered w-full max-w-xs" @change="onFileChange" />
-        <z-button type="reset" @click="reset">清除</z-button>
+        <z-button type="reset" @click="reset">清除</z-button><br />
+        <span>檔案大小：</span><span>{{ offsetInfoStore.fileBytes.length.toLocaleString() }} bytes</span>
       </div>
       <!-- Color Pickers -->
       <z-color-palette />
       <!-- Offset Infos -->
-      <div class="form-control w-fit">
+      <div class="flex form-control w-fit">
+        <z-tab-label>Offset Infos</z-tab-label>
         <label class="label cursor-pointer">
           <span :class="'label-text' + (halfHeight ? '' : ' text-gray-400')">半高 (HalfHeight)</span>
           <input type="checkbox" class="toggle mx-1" v-model="halfHeight" />
