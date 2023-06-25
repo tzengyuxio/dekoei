@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
-import palettes from "@/data/palettes";
+import palettes from "@/data/palettes.json";
 import { useOffsetInfosStore } from "@/stores/offset-infos";
 import { useColorPresetStore } from "@/stores/color-preset";
 import { colorIndexesToImage, hexToRGB, unpackFormats } from "@/utils/unpack";

@@ -1,6 +1,6 @@
 <script setup>
 import { computed, defineComponent } from "vue";
-import palettes from "@/data/palettes";
+import palettes from "@/data/palettes.json";
 import ZButton from "@/components/ZButton.vue";
 import ZColorPicker from "@/components/ZColorPicker.vue";
 import { useColorPresetStore } from "@/stores/color-preset";

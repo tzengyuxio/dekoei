@@ -18,7 +18,7 @@ Shortcuts:
   orderToUnicode()
 */
 
-import { unicodeToCNS11643OrderTable, cns11643ToUnicodeTable, orderToUnicodeTable } from "@/data/encoding-table";
+import cns11643OrderToUnicode from "@/data/cns11643-order-to-unicode.json";
 
 /**
  * Converts an order number to a KOEI Tw-encoded Uint8Array.
@@ -125,6 +125,8 @@ export function cns11643ToOrder(code) {
 /**
  * Converts a given order value to a corresponding CNS11643 character.
  *
+ * Order starts from "一"(1-4421) as 0, then "乙"(1-4422) as 1, and so on...
+ *
  * @param {number} order - The order value to be converted.
  * @return {string} - The CNS11643 character corresponding to the given order value.
  */
@@ -145,34 +147,14 @@ export function orderToCNS11643(order) {
   return `${2}-${((hi + 0x21) << 8) | (lo + 0x21)}`;
 }
 
-export function unicodeToCNS11643(code) {
-  if (code in unicodeToCNS11643OrderTable) {
-    return unicodeToCNS11643OrderTable[code][0];
-  }
-
-  return "";
-}
-
-export function cns11643ToUnicode(code) {
-  if (code in cns11643ToUnicodeTable) {
-    return cns11643ToUnicodeTable[code];
-  }
-
-  return "";
-}
-
 export function orderOfUnicode(code) {
-  if (code in unicodeToCNS11643OrderTable) {
-    return unicodeToCNS11643OrderTable[code][1];
-  }
-
-  return -1;
+  return cns11643OrderToUnicode.table.indexOf(code);
 }
 
 export function orderToUnicode(order) {
-  if (order < 0 || order >= orderToUnicodeTable.length) {
-    return "";
+  if (order < 0 || order >= cns11643OrderToUnicode.table.length) {
+    return "\ufffd";
   }
 
-  return orderToUnicodeTable[order];
+  return cns11643OrderToUnicode.table[order];
 }
