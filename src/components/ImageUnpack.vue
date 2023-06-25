@@ -4,25 +4,31 @@ import { storeToRefs } from "pinia";
 import ZButton from "@/components/ZButton.vue";
 import ZColorPalette from "@/components/ZColorPalette.vue";
 import ZOffsetInfoList from "@/components/ZOffsetInfoList.vue";
+import ZTabLabel from "@/components/ZTabLabel.vue";
 import ImageGallery from "@/components/ImageGallery.vue";
+import { useImageFileStore } from "@/stores/image-file";
 import { useOffsetInfosStore } from "@/stores/offset-infos";
 import { unpackFormats } from "@/utils/unpack";
-import ZTabLabel from "@/components/ZTabLabel.vue";
+import { useColorPresetStore } from "@/stores/color-preset";
 
 const selectedFile = ref(new Blob());
+const colorPresetStore = useColorPresetStore();
 const offsetInfoStore = useOffsetInfosStore();
+const imageFileStore = useImageFileStore();
 
 const { halfHeight } = storeToRefs(offsetInfoStore);
 
 function onFileChange(event) {
   reset();
+  const filename = event.target.files[0].name;
   selectedFile.value = event.target.files[0];
   if (selectedFile.value) {
     const reader = new FileReader();
 
     reader.onload = () => {
       if (reader.result instanceof ArrayBuffer) {
-        offsetInfoStore.setFileBytes(new Uint8Array(reader.result));
+        console.log("ArrayBuffer filename:", filename);
+        imageFileStore.setFile(filename, new Uint8Array(reader.result));
         offsetInfoStore.clear();
         guessOffsetInfos();
       }
@@ -45,15 +51,15 @@ function reset() {
 
 function guessOffsetInfos() {
   let cursor = 0;
-  const format = guessFormat(offsetInfoStore.fileBytes);
+  const format = guessFormat(imageFileStore.fileBytes);
   const unpacker = unpackFormats[format].method;
   const infos = [];
   if (unpacker === null) {
     console.log("guess type failed: ", format);
     return;
   }
-  while (cursor < offsetInfoStore.fileBytes.length) {
-    const data = offsetInfoStore.fileBytes.slice(cursor);
+  while (cursor < imageFileStore.fileBytes.length) {
+    const data = imageFileStore.fileBytes.slice(cursor);
     const [, used, , , error] = unpacker(data, 64, 80, halfHeight.value);
     // console.debug("guess offset info: ", format, cursor, used, halfHeight.value);
     if (error !== "") {
@@ -84,7 +90,7 @@ function guessOffsetInfos() {
   newInfos.forEach((info) => {
     offsetInfoStore.append(info);
   });
-  offsetInfoStore.fill(offsetInfoStore.fileBytes.length);
+  offsetInfoStore.fill(imageFileStore.fileBytes.length);
 }
 
 function guessFormat(data) {
@@ -101,6 +107,73 @@ function guessFormat(data) {
 
   return "kao";
 }
+
+function addCardAtFirst() {
+  offsetInfoStore.insert(0, {
+    format: "skip",
+    offset: 0,
+    size: 0,
+    count: -1,
+    width: -1,
+    height: -1,
+  });
+}
+
+function addCardAtLast() {
+  offsetInfoStore.append({
+    format: "skip",
+    offset: 0,
+    size: 0,
+    count: -1,
+    width: -1,
+    height: -1,
+  });
+}
+
+function exportOffsetInfos() {
+  const data = JSON.stringify(
+    {
+      palette: colorPresetStore.preset,
+      halfHeight: offsetInfoStore.halfHeight,
+      offsetInfos: offsetInfoStore.offsetInfos,
+    },
+    null,
+    2
+  );
+  const blob = new Blob([data], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${imageFileStore.filename}.json`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function importOffsetInfos(event) {
+  const file = event.target.files[0];
+
+  console.log("importOffsetInfos 1");
+  if (file.type === "application/json") {
+    console.log("importOffsetInfos 2");
+    const reader = new FileReader();
+    reader.readAsText(file, "UTF-8");
+    reader.onload = (event) => {
+      console.log("onload in import");
+      const jsonContent = event.target.result.toString();
+      const data = JSON.parse(jsonContent);
+      offsetInfoStore.halfHeight = data.halfHeight;
+      console.log("halfHeight set");
+      offsetInfoStore.offsetInfos = data.offsetInfos;
+      console.log("offsetInfos set");
+      colorPresetStore.setPreset(data.palette);
+      console.log("palette set");
+    };
+  } else {
+    alert("請上傳 JSON 格式的文件！");
+  }
+}
 </script>
 
 <template>
@@ -112,18 +185,35 @@ function guessFormat(data) {
         <div>載入檔案</div>
         <input type="file" class="file-input file-input-bordered w-full max-w-xs" @change="onFileChange" />
         <z-button type="reset" @click="reset">清除</z-button><br />
-        <span>檔案大小：</span><span>{{ offsetInfoStore.fileBytes.length.toLocaleString() }} bytes</span>
+        <span>檔案大小：</span><span>{{ imageFileStore.fileBytes.length.toLocaleString() }} bytes</span>
       </div>
       <!-- Color Pickers -->
       <z-color-palette />
-      <!-- Offset Infos -->
-      <div class="flex form-control w-fit">
+      <!-- Offset Info Header -->
+      <div class="flex-row flex-wrap form-control w-fit outline-block">
         <z-tab-label>Offset Infos</z-tab-label>
         <label class="label cursor-pointer">
           <span :class="'label-text' + (halfHeight ? '' : ' text-gray-400')">半高 (HalfHeight)</span>
           <input type="checkbox" class="toggle mx-1" v-model="halfHeight" />
         </label>
+        <z-button class="w-fit m-1" @click="addCardAtFirst" :disabled="imageFileStore.fileBytes.length <= 0"
+          >新增 Card (前)</z-button
+        >
+        <z-button class="w-fit m-1" @click="addCardAtLast" :disabled="imageFileStore.fileBytes.length <= 0"
+          >新增 Card (後)</z-button
+        >
+        <z-button class="w-fit m-1" @click="exportOffsetInfos" :disabled="offsetInfoStore.offsetInfos.length <= 0"
+          >Export</z-button
+        >
+        <input
+          type="file"
+          class="w-fit m-1"
+          @change="importOffsetInfos"
+          :disabled="imageFileStore.fileBytes.length <= 0"
+        />
+        <z-button class="w-fit m-1" disabled>Download Images</z-button>
       </div>
+      <!-- Offset Infos -->
       <z-offset-info-list />
     </div>
     <image-gallery />

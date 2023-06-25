@@ -5,6 +5,7 @@ import { useOffsetInfosStore } from "@/stores/offset-infos";
 
 const props = defineProps({
   index: { type: Number, default: 0 },
+  title: { type: String, default: "" },
   format: { type: String, default: "skip", required: true },
   offset: { type: Number, default: 0, required: true },
   size: { type: Number, default: 0, required: true },
@@ -52,7 +53,7 @@ function cancel() {
 <template>
   <div class="card w-[27rem] bg-base-100 shadow-xl hover:bg-blue-200 mt-2 px-2 py-2 flex-row flex-wrap">
     <!-- Title -->
-    <h2 class="card-title w-4/6">#{{ index }}</h2>
+    <h2 class="card-title w-4/6">#{{ index }} {{ title }}</h2>
     <!-- Button Controls -->
     <template v-if="!editMode">
       <button class="btn btn-circle w-1/6" @click="enableEdit">

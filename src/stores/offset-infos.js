@@ -10,20 +10,11 @@ export const useOffsetInfosStore = defineStore("offset-infos", () => {
   //   options: object;
   // }
   const halfHeight = ref(false);
-  const fileBytes = ref(new Uint8Array(0));
   const offsetInfos = ref([]);
 
   const totalSize = computed(() =>
     offsetInfos.value.reduce((sum, offsetInfo) => sum + offsetInfo.size * offsetInfo.count, 0)
   );
-
-  function setHalfHeight(halfHeight) {
-    this.halfHeight = halfHeight;
-  }
-
-  function setFileBytes(fileBytes) {
-    this.fileBytes = fileBytes;
-  }
 
   function clear() {
     offsetInfos.value = [];
@@ -59,9 +50,6 @@ export const useOffsetInfosStore = defineStore("offset-infos", () => {
 
   return {
     halfHeight,
-    setHalfHeight,
-    fileBytes,
-    setFileBytes,
     offsetInfos,
     clear,
     append,

@@ -2,16 +2,19 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import palettes from "@/data/palettes.json";
+import { useImageFileStore } from "@/stores/image-file";
 import { useOffsetInfosStore } from "@/stores/offset-infos";
 import { useColorPresetStore } from "@/stores/color-preset";
 import { colorIndexesToImage, hexToRGB, unpackFormats } from "@/utils/unpack";
 
 const gallery = ref(null);
+const imageFileStore = useImageFileStore();
 const offsetInfosStore = useOffsetInfosStore();
 const selectedOption = useColorPresetStore();
 const colors = computed(() => palettes[selectedOption.preset].codes);
 
-const { halfHeight, fileBytes, offsetInfos } = storeToRefs(offsetInfosStore);
+const { halfHeight, offsetInfos } = storeToRefs(offsetInfosStore);
+const { fileBytes } = storeToRefs(imageFileStore);
 
 onMounted(() => {
   updateGallery();
@@ -41,7 +44,7 @@ function updateGallery() {
     for (let i = 0; i < offsetInfo.count; i++) {
       const startPos = offsetInfo.offset + i * offsetInfo.size;
       const endPos = startPos + offsetInfo.size;
-      const data = offsetInfosStore.fileBytes.slice(startPos, endPos);
+      const data = imageFileStore.fileBytes.slice(startPos, endPos);
       // console.log("update gallery iterate offset info", i, startPos, endPos, unpacker);
       const [colorIndexes, , w, h, error] = unpacker(data, 64, 80, halfHeight.value);
       if (colorIndexes === null || colorIndexes.length === 0) {
@@ -50,8 +53,12 @@ function updateGallery() {
         }
         continue;
       }
-      const imageData = colorIndexesToImage(colorIndexes, w, h, rgbColors, halfHeight.value);
-      createCanvas(imageData, w, h);
+      try {
+        const imageData = colorIndexesToImage(colorIndexes, w, h, rgbColors, halfHeight.value);
+        createCanvas(imageData, w, h);
+      } catch (e) {
+        console.error("updateGallery info, count and error: ", offsetInfo, i, e);
+      }
     }
   });
 }
