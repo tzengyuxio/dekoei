@@ -2,7 +2,13 @@
   "defaultDOS": {
     "id": "defaultDOS",
     "name": "預設 (DOS)",
-    "alias": ["koukai", "lempe", "royal", "san2", "suikoden"],
+    "alias": [
+      "koukai",
+      "lempe",
+      "royal",
+      "san2",
+      "suikoden"
+    ],
     "codes": [
       "#000000",
       "#55FF55",
@@ -18,7 +24,9 @@
     "id": "defaultPC98",
     "name": "預設 (PC98)",
     "alias": [
-      "san1_pc98", "san2_pc98", "suikoden_pc98"
+      "san1_pc98",
+      "san2_pc98",
+      "suikoden_pc98"
     ],
     "codes": [
       "#000000",
@@ -34,7 +42,9 @@
   "defaultX68": {
     "id": "defaultX68",
     "name": "預設 (X68000)",
-    "alias": [ "san2_x68" ],
+    "alias": [
+      "san2_x68"
+    ],
     "codes": [
       "#000000",
       "#00E700",
@@ -178,6 +188,20 @@
       "#459ADF",
       "#FF55FF",
       "#FFFFFF"
+    ]
+  },
+  "winning": {
+    "id": "winning",
+    "name": "賽馬大亨",
+    "codes": [
+      "#000000",
+      "#20D320",
+      "#F30000",
+      "#F3D300",
+      "#0061C3",
+      "#00B2F3",
+      "#F351F3",
+      "#F3F3F3"
     ]
   }
 }
