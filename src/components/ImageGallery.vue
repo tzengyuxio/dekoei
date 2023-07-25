@@ -46,7 +46,9 @@ function updateGallery() {
       const endPos = startPos + offsetInfo.size;
       const data = imageFileStore.fileBytes.slice(startPos, endPos);
       // console.log("update gallery iterate offset info", i, startPos, endPos, unpacker);
-      const [colorIndexes, , w, h, error] = unpacker(data, 64, 80, halfHeight.value);
+      const infoW = offsetInfo.width === -1 ? 64 : offsetInfo.width;
+      const infoH = offsetInfo.height === -1 ? 80 : offsetInfo.height;
+      const [colorIndexes, , w, h, error] = unpacker(data, infoW, infoH, halfHeight.value);
       if (colorIndexes === null || colorIndexes.length === 0) {
         if (error !== "") {
           console.error("updateGallery format and error: ", offsetInfo.format, error);

@@ -34,13 +34,14 @@ function deleteInfo() {
 }
 
 function save() {
+  const size = selected.value === "kao" ? ((vWidth.value * vHeight.value) / 8) * 3 : vSize.value;
   offsetInfosStore.update(props.index, {
     format: selected.value,
     offset: vOffset.value,
-    size: vSize.value,
-    count: vCount.value,
-    width: vWidth.value,
-    height: vHeight.value,
+    size: size,
+    count: selected.value === "skip" ? 1 : vCount.value,
+    width: selected.value === "kao" ? vWidth.value : -1,
+    height: selected.value === "kao" ? vHeight.value : -1,
   });
   editMode.value = false;
 }
@@ -118,7 +119,7 @@ function cancel() {
       <input
         v-model.number="vSize"
         type="text"
-        :disabled="!editMode"
+        :disabled="!editMode || selected === 'kao'"
         class="input input-bordered w-full max-w-xs input-xs"
       />
     </div>
@@ -129,7 +130,7 @@ function cancel() {
       <input
         v-model.number="vCount"
         type="text"
-        :disabled="!editMode"
+        :disabled="!editMode || selected === 'skip'"
         class="input input-bordered w-full max-w-xs input-xs"
       />
     </div>
@@ -140,7 +141,7 @@ function cancel() {
       <input
         v-model.number="vWidth"
         type="text"
-        :disabled="!editMode"
+        :disabled="!editMode || selected !== 'kao'"
         class="input input-bordered w-full max-w-xs input-xs"
       />
     </div>
@@ -151,7 +152,7 @@ function cancel() {
       <input
         v-model.number="vHeight"
         type="text"
-        :disabled="!editMode"
+        :disabled="!editMode || selected !== 'kao'"
         class="input input-bordered w-full max-w-xs input-xs"
       />
     </div>

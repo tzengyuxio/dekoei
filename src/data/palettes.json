@@ -56,6 +56,20 @@
       "#E7E7E7"
     ]
   },
+  "san2ExceptKao": {
+    "id": "san2ExceptKao",
+    "name": "三國志II (頭像以外)",
+    "codes": [
+      "#000000",
+      "#5555FF",
+      "#FF5555",
+      "#FF55FF",
+      "#55FF55",
+      "#55FFFF",
+      "#FFFF55",
+      "#FFFFFF"
+    ]
+  },
   "san3": {
     "id": "san3",
     "name": "三國志III",

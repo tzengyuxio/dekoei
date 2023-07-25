@@ -74,7 +74,7 @@ export function unpackKao(data, w, h, halfHeight) {
 export function unpackGrp(data, _w, _h, halfHeight) {
   let error = "";
   const w = (data[1] << 8) | data[0];
-  const h = (data[3] << 8) | data[2];
+  const h = ((data[3] << 8) | data[2]) * (halfHeight ? 2 : 1);
   if (w <= 0 || w > 800 || h <= 0 || h > 800) {
     error = "unpackGrp: out of range: " + w + "x" + h;
     console.log(error);

@@ -7,6 +7,8 @@ export const useOffsetInfosStore = defineStore("offset-infos", () => {
   //   offset: number;
   //   size: number;
   //   count: number;
+  //   width: number;
+  //   height: number;
   //   options: object;
   // }
   const halfHeight = ref(false);
@@ -44,6 +46,8 @@ export const useOffsetInfosStore = defineStore("offset-infos", () => {
         offset: totalSize,
         size: fullSize - totalSize.value,
         count: 1,
+        width: -1,
+        height: -1,
       });
     }
   }

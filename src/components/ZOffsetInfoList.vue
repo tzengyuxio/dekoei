@@ -21,7 +21,7 @@ function cardTitle(index) {
 </script>
 
 <template>
-  <div class="mt-4 outline-block" ref="container">
+  <div class="mt-4 outline-block overflow-x-hidden overflow-scroll h-fit" ref="container">
     <template v-for="(offsetInfo, index) in offsetInfos" :key="cardTitle(index)">
       <z-offset-info-card
         :index="index"
@@ -30,6 +30,8 @@ function cardTitle(index) {
         :offset="offsetInfo.offset"
         :size="offsetInfo.size"
         :count="offsetInfo.count"
+        :width="offsetInfo.width"
+        :height="offsetInfo.height"
       />
     </template>
   </div>

@@ -71,6 +71,8 @@ function guessOffsetInfos() {
       offset: cursor,
       size: used,
       count: 1,
+      width: -1,
+      height: -1,
       memo: {},
     });
     cursor += used;
@@ -113,18 +115,20 @@ function addCardAtFirst() {
     format: "skip",
     offset: 0,
     size: 0,
-    count: -1,
+    count: 1,
     width: -1,
     height: -1,
   });
 }
 
 function addCardAtLast() {
+  const lastInfo = offsetInfoStore.offsetInfos[offsetInfoStore.offsetInfos.length - 1];
+  const pos = lastInfo.offset + lastInfo.size * lastInfo.count;
   offsetInfoStore.append({
     format: "skip",
-    offset: 0,
+    offset: pos,
     size: 0,
-    count: -1,
+    count: 1,
     width: -1,
     height: -1,
   });
@@ -174,11 +178,19 @@ function importOffsetInfos(event) {
     alert("請上傳 JSON 格式的文件！");
   }
 }
+
+function reorderOffsetInfos() {
+  let cursor = 0;
+  offsetInfoStore.offsetInfos.forEach((info) => {
+    info.offset = cursor;
+    cursor += info.size * info.count;
+  });
+}
 </script>
 
 <template>
   <div class="container flex">
-    <div class="flex flex-col w-1/2">
+    <div class="flex flex-col w-1/2 h-screen">
       <!-- File Controls -->
       <div class="small-block w-128 outline-block">
         <z-tab-label>Files</z-tab-label>
@@ -204,6 +216,9 @@ function importOffsetInfos(event) {
         >
         <z-button class="w-fit m-1" @click="exportOffsetInfos" :disabled="offsetInfoStore.offsetInfos.length <= 0"
           >Export</z-button
+        >
+        <z-button class="w-fit m-1" @click="reorderOffsetInfos" :disabled="offsetInfoStore.offsetInfos.length <= 0"
+          >Reorder</z-button
         >
         <input
           type="file"
