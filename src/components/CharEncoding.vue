@@ -121,12 +121,12 @@ function textToShiftJISCode(text) {
   </template>
   <div>
     <label for="input1">輸入文字:</label>
-    <input type="text" id="input1" class="text-black" v-model="inputText" placeholder="(請輸入文字)" />
+    <input type="text" id="input1" class="input-sm" v-model="inputText" placeholder="(請輸入文字)" />
     <div>轉換結果: {{ encodedText }}</div>
   </div>
   <div>
     <label for="input2">輸入 hex string:</label>
-    <input type="text" id="input2" class="text-black" v-model="inputHex" />
+    <input type="text" id="input2" class="input-sm" v-model="inputHex" />
     <div>轉換結果: {{ decodedText }}</div>
   </div>
 </template>
